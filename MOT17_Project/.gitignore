@@ -1,0 +1,31 @@
+*.zip
+MOT17_Project/MOT17_Full/
+MOT17_Project/MOT20_Full/
+MOT17_Project/Final_Results/
+*.pt
+.idea/
+
+# --- Data and Results ---
+MOT17_Full/
+MOT20_Full/
+Final_Results/
+Grids_Final_12combo/
+
+# --- Weights and Models ---
+*.pt
+*.onnx
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Result Videos ---
+*.avi
+*.mp4
