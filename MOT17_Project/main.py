@@ -1,12 +1,15 @@
 #main.py
 import cv2
 from ultralytics import YOLO
-from config import PARAMS, SEQ_CONFIG, MOT17_ROOT, MOT20_ROOT, SAVE_ROOT, LEVELS
+from config import (
+    PARAMS, SEQ_CONFIG, MOT17_ROOT, MOT20_ROOT, SAVE_ROOT, LEVELS,
+    PERSON_MODEL_PATH, FACE_MODEL_PATH
+)
 from deid_utils import apply_anonymization
 
 
 class AnonymizationManager:
-    def __init__(self, sequence_name):
+    def __init__(self, sequence_name, person_model, face_model):
         self.seq_name = sequence_name
         self.config = SEQ_CONFIG[sequence_name]
 
@@ -18,26 +21,28 @@ class AnonymizationManager:
         self.save_dir = SAVE_ROOT / sequence_name
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        # 모델 로드
-        print(f"📦 모델 로드 중... ({sequence_name})")
-        self.person_model = YOLO("yolov8n.pt")
-        self.face_model = YOLO("yolov8n-face.pt")
+        # 모델은 외부에서 1회만 로드해서 주입 (시퀀스마다 재로드하지 않음)
+        self.person_model = person_model
+        self.face_model = face_model
 
     def run(self):
         frame_files = sorted(list(self.source_path.glob("*.jpg")))
         target_frames = frame_files[self.config['start'] - 1: self.config['end']]
 
         if not target_frames:
-            print(f"❌ 프레임을 찾을 수 없습니다: {self.source_path}")
+            print(f"프레임을 찾을 수 없습니다: {self.source_path}")
             return
 
         writers = {}
-        print(f"🚀 처리 시작: {len(target_frames)} 프레임 대상")
+        skipped = 0
+        print(f"처리 시작: {len(target_frames)} 프레임 대상 ({self.seq_name})")
 
         try:
             for i, frame_path in enumerate(target_frames):
                 frame = cv2.imread(str(frame_path))
-                if frame is None: continue
+                if frame is None:
+                    skipped += 1
+                    continue
 
                 # 검출 (프레임당 1회 수행)
                 p_res = self.person_model(frame, verbose=False, conf=0.3, classes=[0])[0]
@@ -60,7 +65,7 @@ class AnonymizationManager:
 
         finally:
             for w in writers.values(): w.release()
-            print(f"✅ 완료! 저장 위치: {self.save_dir}")
+            print(f"✅ 완료! 저장 위치: {self.save_dir} (스킵된 프레임: {skipped}개)")
 
     def _save(self, frame, boxes, method, ratio, name, writers):
         """비식별화 적용 후 영상 저장"""
@@ -74,15 +79,25 @@ class AnonymizationManager:
         writers[name].write(out)
 
 
-if __name__ == "__main__":
-    # 실행하고 싶은 시퀀스 리스트
+def main():
     targets = [
         "MOT17-04",
         "MOT17-05",
         "MOT17-09",
         "MOT17-11",
         "MOT17-13",
-        "MOT20-02"]
+        "MOT20-02",
+    ]
+
+    # 모델은 전체 시퀀스에 대해 한 번만 로드 (원본 코드는 시퀀스마다 재로드하는 문제가 있었음)
+    print("모델 로드 중...")
+    person_model = YOLO(str(PERSON_MODEL_PATH))
+    face_model = YOLO(str(FACE_MODEL_PATH))
+
     for target in targets:
-        manager = AnonymizationManager(target)
+        manager = AnonymizationManager(target, person_model, face_model)
         manager.run()
+
+
+if __name__ == "__main__":
+    main()

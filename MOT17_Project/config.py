@@ -3,11 +3,16 @@ import os
 from pathlib import Path
 
 # --- 프로젝트 경로 설정 ---
-PROJECT_DIR = Path(os.getcwd())
+PROJECT_DIR = Path(__file__).resolve().parent
+
 # 필요시 실제 데이터 경로로 수정하세요 (예: Path("/content/drive/..."))
 MOT17_ROOT = PROJECT_DIR / 'MOT17_Full' / 'MOT17' / 'train'
 MOT20_ROOT = PROJECT_DIR / 'MOT20_Full' / 'MOT20' / 'train'
 SAVE_ROOT = PROJECT_DIR / 'Final_Results'
+
+# --- 모델 경로 ---
+PERSON_MODEL_PATH = PROJECT_DIR / 'yolov8n.pt'
+FACE_MODEL_PATH = PROJECT_DIR / 'yolov8n-face.pt'
 
 # --- [중요] 사용자 정의 비식별화 파라미터 ---
 # L = min(width, height) 기준 비율

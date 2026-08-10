@@ -1,5 +1,4 @@
 ultralytics
 opencv-python
 numpy
-pathlib
 requests

@@ -44,8 +44,14 @@ download_dataset.py를 실행하여 실험에 사용된 MOT17/MOT20의 핵심 6�
 python download_dataset.py
 ```
 
-### 3. 비식별화 및 추적 실행
-yolov8n-face.pt 모델을 프로젝트 루트 폴더에 위치시킨 후, main.py를 실행하여 비식별화 영상을 생성합니다.
+### 3. 얼굴 검출 모델 준비
+`yolov8n-face.pt`는 ultralytics 공식 배포 모델이 아니라서 자동 다운로드되지 않습니다.
+```bash
+python download_face_model.py
+```
+(`yolov8n.pt`는 ultralytics가 최초 실행 시 자동으로 받아옵니다.)
+
+### 4. 비식별화 실행
 ```bash
 python main.py
 ```
