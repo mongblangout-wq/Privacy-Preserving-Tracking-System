@@ -1,11 +1,16 @@
-#main.py
+# anonymization/run_anonymize.py
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import cv2
 from ultralytics import YOLO
 from config import (
     PARAMS, SEQ_CONFIG, MOT17_ROOT, MOT20_ROOT, SAVE_ROOT, LEVELS,
     PERSON_MODEL_PATH, FACE_MODEL_PATH
 )
-from deid_utils import apply_anonymization
+from anonymization.anonymizer import apply_anonymization
 
 
 class AnonymizationManager:
@@ -13,7 +18,6 @@ class AnonymizationManager:
         self.seq_name = sequence_name
         self.config = SEQ_CONFIG[sequence_name]
 
-        # 경로 결정 (MOT17 vs MOT20)
         root = MOT20_ROOT if "MOT20" in sequence_name else MOT17_ROOT
         suffix = "" if "MOT20" in sequence_name else "-SDP"
         self.source_path = root / f"{sequence_name}{suffix}" / 'img1'
@@ -21,7 +25,6 @@ class AnonymizationManager:
         self.save_dir = SAVE_ROOT / sequence_name
         self.save_dir.mkdir(parents=True, exist_ok=True)
 
-        # 모델은 외부에서 1회만 로드해서 주입 (시퀀스마다 재로드하지 않음)
         self.person_model = person_model
         self.face_model = face_model
 
@@ -44,19 +47,15 @@ class AnonymizationManager:
                     skipped += 1
                     continue
 
-                # 검출 (프레임당 1회 수행)
                 p_res = self.person_model(frame, verbose=False, conf=0.3, classes=[0])[0]
                 p_boxes = p_res.boxes.xyxy.cpu().numpy() if p_res.boxes is not None else []
 
                 f_res = self.face_model(frame, verbose=False, conf=0.3)[0]
                 f_boxes = f_res.boxes.xyxy.cpu().numpy() if f_res.boxes is not None else []
 
-                # --- 12가지 조합 비식별화 처리 ---
                 for lv in LEVELS:
-                    # 얼굴 (Face)
                     self._save(frame, f_boxes, "blur", PARAMS["FACE_BLUR"][lv], f"face_blur_{lv}", writers)
                     self._save(frame, f_boxes, "mosaic", PARAMS["FACE_MOSAIC"][lv], f"face_mosaic_{lv}", writers)
-                    # 사람 (Person)
                     self._save(frame, p_boxes, "blur", PARAMS["PERSON_BLUR"][lv], f"person_blur_{lv}", writers)
                     self._save(frame, p_boxes, "mosaic", PARAMS["PERSON_MOSAIC"][lv], f"person_mosaic_{lv}", writers)
 
@@ -68,7 +67,6 @@ class AnonymizationManager:
             print(f"✅ 완료! 저장 위치: {self.save_dir} (스킵된 프레임: {skipped}개)")
 
     def _save(self, frame, boxes, method, ratio, name, writers):
-        """비식별화 적용 후 영상 저장"""
         out = apply_anonymization(frame, boxes, method, ratio)
 
         if name not in writers:
@@ -81,15 +79,10 @@ class AnonymizationManager:
 
 def main():
     targets = [
-        "MOT17-04",
-        "MOT17-05",
-        "MOT17-09",
-        "MOT17-11",
-        "MOT17-13",
-        "MOT20-02",
+        "MOT17-04", "MOT17-05", "MOT17-09",
+        "MOT17-11", "MOT17-13", "MOT20-02",
     ]
 
-    # 모델은 전체 시퀀스에 대해 한 번만 로드 (원본 코드는 시퀀스마다 재로드하는 문제가 있었음)
     print("모델 로드 중...")
     person_model = YOLO(str(PERSON_MODEL_PATH))
     face_model = YOLO(str(FACE_MODEL_PATH))

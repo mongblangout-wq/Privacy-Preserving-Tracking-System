@@ -1,16 +1,19 @@
-# download_face_model.py
+# setup/download_face_model.py
 """
 yolov8n-face.pt는 ultralytics 공식 배포 모델이 아니라서 YOLO("yolov8n-face.pt")로
 자동 다운로드되지 않습니다. 아래 스크립트로 사전에 받아두세요.
 
 사용법:
-    python download_face_model.py
+    python setup/download_face_model.py
 """
-import requests
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+import requests
 from config import FACE_MODEL_PATH
 
-# lindevs/yolov8-face 릴리즈 (ultralytics YOLO()로 바로 로드 가능한 체크포인트)
 FACE_MODEL_URL = "https://github.com/lindevs/yolov8-face/releases/latest/download/yolov8n-face-lindevs.pt"
 
 
