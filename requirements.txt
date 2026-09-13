@@ -1,4 +1,10 @@
+# Deep Learning & Tracking
 ultralytics
 opencv-python
 numpy
 requests
+
+# Evaluation & Visualization 
+pandas
+matplotlib
+seaborn

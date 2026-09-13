@@ -55,3 +55,22 @@ python download_face_model.py
 ```bash
 python main.py
 ```
+
+### 5. 다중 객체 추적(Tracking) 실행
+비식별화 처리된 영상을 입력으로 다중 객체 추적을 수행하고 추적 결과 비디오를 생성합니다.
+```bash
+# 단일 영상 추적 실행 예시
+python tracking/run_tracking.py --model yolov8s --tracker botsort --video data/sample_anonymized.mp4
+```
+
+### 6. 실험 결과 분석 및 시각화
+전체 조건별 정량 평가 데이터(`auto_evaluation_sum.csv`)를 기반으로 모델 체급별 및 비식별화 강도별 성능 비교 그래프를 생성합니다.
+```bash
+python tracking/analysis.py
+```
+
+
+## 📂 실험 데이터셋 및 결과 아카이빙 (Google Drive)
+저장소 용량 제한으로 인해 비식별화 처리된 대용량 영상 원본과 216개 전체 조건별 정량 평가 지표 원본(`auto_evaluation_sum.csv`)은 구글 드라이브에 보관되어 있습니다.
+
+- 🔗 **[Google Drive 실험 전체 데이터셋 바로가기](https://drive.google.com/drive/folders/1tYQgj-q1Y3wE5F_3qYm8WjVVGF96P3d3?usp=sharing)**
