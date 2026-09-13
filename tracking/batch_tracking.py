@@ -4,7 +4,7 @@ from ultralytics import YOLO
 models = ['yolov8n.pt', 'yolov8s.pt']
 trackers = ['bytetrack.yaml', 'botsort.yaml']
 video_dir = Path('data/anonymized_videos') 
-video_list = list(video_dir.glob('*.mp4'))
+video_files = list(video_dir.glob("*.avi")) + list(video_dir.glob("*.mp4"))
 
 for model_name in models:
     model = YOLO(model_name)
