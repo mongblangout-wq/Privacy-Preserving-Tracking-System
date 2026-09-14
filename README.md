@@ -39,34 +39,38 @@ pip install -r requirements.txt
 ```
 
 ### 2. 데이터 준비
-download_dataset.py를 실행하여 실험에 사용된 MOT17/MOT20의 핵심 6개 시퀀스를 준비합니다.
+`setup/download_dataset.py`를 실행하여 실험에 사용된 MOT17/MOT20의 핵심 6개 시퀀스를 준비합니다.
 ```bash
-python download_dataset.py
+python setup/download_dataset.py
 ```
 
 ### 3. 얼굴 검출 모델 준비
 `yolov8n-face.pt`는 ultralytics 공식 배포 모델이 아니라서 자동 다운로드되지 않습니다.
 ```bash
-python download_face_model.py
+python setup/download_face_model.py
 ```
-(`yolov8n.pt`는 ultralytics가 최초 실행 시 자동으로 받아옵니다.)
+(`yolov8n.pt`, `yolov8s.pt`는 ultralytics가 최초 실행 시 자동으로 받아옵니다.)
 
 ### 4. 비식별화 실행
+`Final_Results/<시퀀스명>/` 하위에 12가지 조합(Face/Person × Blur/Mosaic × Weak/Medium/Strong)의 `.avi` 영상이 생성됩니다.
 ```bash
-python main.py
+python anonymization/run_anonymize.py
 ```
 
 ### 5. 다중 객체 추적(Tracking) 실행
-비식별화 처리된 영상을 입력으로 다중 객체 추적을 수행하고 추적 결과 비디오를 생성합니다.
+`Final_Results/` 아래 모든 비식별화 영상을 찾아 YOLOv8n/s × ByteTrack/BoT-SORT 조합으로 일괄 추적합니다.
 ```bash
-# 단일 영상 추적 실행 예시
-python tracking/run_tracking.py --model yolov8s --tracker botsort --video data/sample_anonymized.mp4
+python tracking/batch_tracking.py
+```
+단일 영상만 빠르게 테스트하고 싶다면:
+```bash
+python tracking/tracking.py
 ```
 
 ### 6. 실험 결과 분석 및 시각화
 전체 조건별 정량 평가 데이터(`auto_evaluation_sum.csv`)를 기반으로 모델 체급별 및 비식별화 강도별 성능 비교 그래프를 생성합니다.
 ```bash
-python tracking/analysis.py
+python evaluation/analysis.py
 ```
 
 
